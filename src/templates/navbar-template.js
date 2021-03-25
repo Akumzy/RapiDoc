@@ -38,7 +38,7 @@ function onExpandCollapseAll(e, action = 'expand-all') {
 /* eslint-disable indent */
 export default function navbarTemplate() {
   return html`
-  <nav class='nav-bar ${this.renderStyle}' part="section-navbar">
+  <nav class='nav-bar focused' part="section-navbar">
     <div style="padding:16px 30px 0 16px;">
       <slot name="nav-logo" class="logo"></slot>
     </div>
@@ -139,16 +139,16 @@ export default function navbarTemplate() {
                   data-content-id='${tag.elementId}'
                   data-first-path-id='${tag.firstPathId}'
                   @click='${(e) => {
-                    if (this.renderStyle === 'focused' && this.onNavTagClick === 'expand-collapse') {
-                      onExpandCollapse.call(this, e);
-                    } else {
+                      if (this.onNavTagClick === 'expand-collapse') {
+                        onExpandCollapse.call(this, e);
+                      }
                       this.scrollToEventTarget(e, false);
-                    }
+                    
                   }}'
                 >
                   <div>${tag.name}</div>
                   <div class="nav-bar-tag-icon" @click="${(e) => {
-                    if (this.renderStyle === 'focused' && this.onNavTagClick === 'show-description') {
+                    if (this.onNavTagClick === 'show-description') {
                       onExpandCollapse.call(this, e);
                     }
                   }}">

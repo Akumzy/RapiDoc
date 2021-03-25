@@ -9,6 +9,7 @@ export default async function ProcessSpec(specUrl, generateMissingTags = false, 
     let specMeta;
     if (typeof specUrl === 'string') {
       specMeta = await OpenApiParser.resolve({ url: specUrl }); // Swagger(specUrl);
+
     } else {
       specMeta = await OpenApiParser.resolve({ spec: specUrl }); // Swagger({ spec: specUrl });
     }
@@ -126,7 +127,10 @@ function getHeadersFromMarkdown(markdownContent) {
   const headers = tokens.filter((v) => v.type === 'heading' && v.depth <= 2);
   return headers || [];
 }
-
+//Nylas Mod
+function addTag(tag, id) {
+  return `${tag.replace(/\s/g,'-').toLowerCase()}${id?'/':''}${id}`
+}
 function getComponents(openApiSpec) {
   if (!openApiSpec.components) {
     return [];
@@ -204,12 +208,13 @@ function getComponents(openApiSpec) {
   return components || [];
 }
 
-function groupByTags(openApiSpec, generateMissingTags = false, sortTags = false, sortEndpointsBy) {
+function groupByTags (openApiSpec, generateMissingTags = false, sortTags = false, sortEndpointsBy) {
   const supportedMethods = ['get', 'put', 'post', 'delete', 'patch', 'head', 'options']; // this is also used for ordering endpoints by methods
   const tags = openApiSpec.tags && Array.isArray(openApiSpec.tags)
     ? openApiSpec.tags.map((v) => ({
       show: true,
-      elementId: `tag--${v.name.replace(invalidCharsRegEx, '-')}`,
+      //Nylas MOD
+      elementId: addTag(v.name,``),
       name: v.name,
       description: v.description || '',
       headers: v.description ? getHeadersFromMarkdown(v.description) : [],
@@ -265,7 +270,8 @@ function groupByTags(openApiSpec, generateMissingTags = false, sortTags = false,
           if (!tagObj) {
             tagObj = {
               show: true,
-              elementId: `tag--${tag.replace(invalidCharsRegEx, '-')}`,
+              //Nylas MOD
+              elementId: addTag(tag,``),
               name: tag,
               description: specTagsItem?.description || '',
               headers: specTagsItem?.description ? getHeadersFromMarkdown(specTagsItem.description) : [],
@@ -308,7 +314,8 @@ function groupByTags(openApiSpec, generateMissingTags = false, sortTags = false,
             method: methodName,
             path: pathOrHookName,
             operationId: pathOrHookObj.operationId,
-            elementId: `${methodName}-${pathOrHookName.replace(invalidCharsRegEx, '-')}`,
+            //Nylas MOD
+            elementId: addTag(tag,`${methodName}${pathOrHookName.replace(invalidCharsRegEx, '')}`),
             servers: pathOrHookObj.servers ? commonPathProp.servers.concat(pathOrHookObj.servers) : commonPathProp.servers,
             parameters: finalParameters,
             requestBody: pathOrHookObj.requestBody,

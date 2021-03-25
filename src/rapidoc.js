@@ -123,6 +123,12 @@ export default class RapiDoc extends LitElement {
       focusedElementId: { type: String }, // updating the focusedElementId will automatically render appropriate section in focused mode
       showAdvancedSearchDialog: { type: Boolean },
       advancedSearchMatches: { type: Object },
+
+      //Nylas Mod
+      rootPath: { type: String, attribute: 'root-path' },
+      ignoreRootPath: { type: String, attribute: 'ignore-root-path' },
+      routerMode: { type: String, attribute: 'router-mode' },
+  
     };
   }
 
@@ -454,6 +460,11 @@ export default class RapiDoc extends LitElement {
 
     if (!this.showAdvancedSearchDialog) { this.showAdvancedSearchDialog = false; }
 
+    // Nylas MOD
+    if (!this.rootPath) { this.rootPath = ''; }
+    if (!this.ignoreRootPath) { this.ignoreRootPath = 'false' }
+    if (!this.routerMode) { this.routerMode = 'hash' }
+
     marked.setOptions({
       highlight: (code, lang) => {
         if (Prism.languages[lang]) {
@@ -487,7 +498,13 @@ export default class RapiDoc extends LitElement {
     // return render(mainBodyTemplate(this), this.shadowRoot, { eventContext: this });
     return mainBodyTemplate.call(this);
   }
-
+ // Nylas MOD
+ fullPathname (path) {
+    path = `${this.ignoreRootPath == 'true' ? '' : this.rootPath}${path.startsWith('/')?'':'/'}${path}`
+    path = path.startsWith('/')?path.substring(1):path
+    return path
+ }
+  
   /* eslint-enable indent */
 
   observeExpandedContent() {
@@ -706,6 +723,9 @@ export default class RapiDoc extends LitElement {
     } else if (this.renderStyle === 'focused') {
       const defaultElementId = this.showInfo ? 'overview' : this.resolvedSpec.tags[0]?.paths[0];
       this.scrollTo(defaultElementId);
+    } else {
+      let id = window.location.pathname.replace(this.rootPath, '')
+      this.scrollTo(id);
     }
   }
 
@@ -738,7 +758,7 @@ export default class RapiDoc extends LitElement {
         const gotoEl = this.shadowRoot.getElementById(tmpElementId);
         if (gotoEl) {
           gotoEl.scrollIntoView({ behavior: 'auto', block: 'start' });
-          window.history.replaceState(null, null, `#${tmpElementId}`);
+          window.history.replaceState(null, null, `${this.routerMode == 'hash'?'#':'/'}${this.fullPathname(`/${tmpElementId}`)}`);
         }
       }, isExpandingNeeded ? 150 : 0);
     }
@@ -775,7 +795,8 @@ export default class RapiDoc extends LitElement {
 
         // Add active class in the new element
         if (newNavEl) {
-          window.history.replaceState(null, null, `${window.location.href.split('#')[0]}#${entry.target.id}`);
+          const url = this.routerMode == 'hash' ? `${window.location.href.split('#')[0]}#${entry.target.id}` : `/${this.fullPathname(`/${entry.target.id}`)}`
+          window.history.replaceState(null, null, url);
           newNavEl.scrollIntoView({ behavior: 'auto', block: 'center' });
           newNavEl.classList.add('active');
         }
@@ -834,7 +855,16 @@ export default class RapiDoc extends LitElement {
       this.expandAndGotoOperation(elementId, expandPath, true);
     } else {
       let isValidElementId = false;
-      const contentEl = this.shadowRoot.getElementById(elementId);
+      let contentEl = this.shadowRoot.getElementById(elementId);
+      if (!contentEl) {
+        elementId = elementId.startsWith('/') ? elementId.slice(1) : elementId;
+        contentEl = this.shadowRoot.getElementById(elementId);
+        if (!contentEl) {
+          elementId = elementId.endsWith('/') ? elementId.slice(0, -1) : elementId; 
+         contentEl = this.shadowRoot.getElementById(elementId);
+        }
+      }
+
       if (contentEl) {
         isValidElementId = true;
         // ScrollIntoView is needed for read-mode and overview and tag section in focused-mode
@@ -858,7 +888,7 @@ export default class RapiDoc extends LitElement {
         }
 
         // Update Location Hash
-        window.history.replaceState(null, null, `#${elementId}`);
+         window.history.replaceState(null, null, `${this.routerMode == 'hash'?'#':'/'}${this.fullPathname(`${elementId}`)}`);
 
         // Update NavBar View and Styles
         const newNavEl = this.shadowRoot.getElementById(`link-${elementId}`);

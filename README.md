@@ -62,3 +62,24 @@ npm run serve
 ```
 
 ## Contribution
+
+
+## Nylas Modifications
+
+Changes were made in the listed files below:
+ - rapidoc/src/utils/spec-parser.js
+ - rapidoc/src/templates/navbar-template.js
+ - rapidoc/src/rapidoc.js
+
+New attributes
+ - `rootPath` indicates the root pathname e.g. `/docs/api`
+ - `routerMode` (Borrowed from Vue-router) indicates if to use history or hash for navigation default being hash
+ - `ignoreRootPath` does what the name says
+
+ All the modification were tailored around Nylas requirements
+
+`renderStyle for navbar was changed to `focused` only from using the `this.renderStyle` variable.
+
+need the route change from using a hash to the standard pathname
+current /docs/api/account-management/#get-/a/{client_id}/accounts
+new /docs/api/account-management/get/a/client_id/accounts
