@@ -67,9 +67,10 @@ npm run serve
 ## Nylas Modifications
 
 Changes were made in the listed files below:
- - rapidoc/src/utils/spec-parser.js
- - rapidoc/src/templates/navbar-template.js
- - rapidoc/src/rapidoc.js
+ - ./src/utils/spec-parser.js
+ - ./src/templates/navbar-template.js
+ - ./src/rapidoc.js
+ - ./src/templates/focused-endpoint-template.js
 
 New attributes
  - `rootPath` indicates the root pathname e.g. `/docs/api`
@@ -83,3 +84,5 @@ New attributes
 need the route change from using a hash to the standard pathname
 current /docs/api/account-management/#get-/a/{client_id}/accounts
 new /docs/api/account-management/get/a/client_id/accounts
+
+Changing the `render-style` from "read" to "focused" introduced a lot of complication which I've carefully patched for this to work well
